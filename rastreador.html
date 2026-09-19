@@ -3,23 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Transmissor — Rastreador micro:bit</title>
+<title>Rastreador Aranha — Transmissor</title>
 <style>
   :root{
-    --bg: #0B1620;
-    --panel: #10202D;
-    --line: #1E3542;
-    --text: #E7F0F3;
-    --muted: #7E97A3;
-    --signal: #4ADE9A;
-    --signal-dim: #1F5B44;
+    --bg: #0A0E1A;
+    --panel: #10152A;
+    --line: #26315A;
+    --text: #EDEFFA;
+    --muted: #8590B8;
+    --signal: #2E6BFF;
+    --signal-dim: #16264F;
     --warn: #F0A860;
-    --danger: #E2645A;
+    --danger: #E4293D;
+    --web: rgba(228,41,61,0.14);
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
-    background: radial-gradient(120% 140% at 50% -10%, #142834 0%, var(--bg) 55%);
+    background:
+      repeating-conic-gradient(from 0deg at 50% -20%, var(--web) 0deg 1deg, transparent 1deg 15deg),
+      radial-gradient(140% 90% at 50% -20%, #1C1030 0%, var(--bg) 55%);
     color: var(--text);
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     min-height:100vh;
@@ -30,15 +33,23 @@
   main{width:100%; max-width:420px;}
   .eyebrow{
     font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 0.02em;
+    color: var(--danger);
+    letter-spacing: 0.04em;
     margin-bottom: 4px;
+    font-weight: 700;
+    display:flex;
+    align-items:center;
+    gap:6px;
   }
   h1{
-    font-size: 26px;
+    font-size: 27px;
     margin: 0 0 28px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.25;
+    background: linear-gradient(90deg, #FF3B4E 0%, #EDEFFA 45%, #4C7CFF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .card{
     background: var(--panel);
@@ -46,6 +57,16 @@
     border-radius: 14px;
     padding: 22px;
     margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before{
+    content:"🕸️";
+    position:absolute;
+    top:-14px; right:-10px;
+    font-size: 64px;
+    opacity: 0.07;
+    transform: rotate(8deg);
   }
   .status-row{
     display:flex;
@@ -63,9 +84,9 @@
     animation: pulse 1.8s infinite;
   }
   @keyframes pulse{
-    0%{ box-shadow: 0 0 0 0 rgba(74,222,154,0.45); }
-    70%{ box-shadow: 0 0 0 9px rgba(74,222,154,0); }
-    100%{ box-shadow: 0 0 0 0 rgba(74,222,154,0); }
+    0%{ box-shadow: 0 0 0 0 rgba(46,107,255,0.45); }
+    70%{ box-shadow: 0 0 0 9px rgba(46,107,255,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(46,107,255,0); }
   }
   .status-text{font-size:15px; color:var(--muted);}
   button{
@@ -79,8 +100,8 @@
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active{ transform: scale(0.98); }
-  button.primary{ background: var(--signal); color: #06231A; }
-  button.primary:disabled{ background: var(--signal-dim); color: #6B8E80; cursor:default; }
+  button.primary{ background: linear-gradient(90deg, var(--danger), var(--signal)); color: #FFFFFF; }
+  button.primary:disabled{ background: var(--signal-dim); color: #6B7BAD; cursor:default; }
   .telemetry{
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -119,7 +140,7 @@
 </head>
 <body>
 <main>
-  <div class="eyebrow">Projeto de ciências</div>
+  <div class="eyebrow">🕷️ Rastreador Aranha</div>
   <h1>Transmissor — carrega o micro:bit junto com você</h1>
 
   <div class="card">

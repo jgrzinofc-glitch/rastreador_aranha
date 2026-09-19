@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreador Aranha — Transmissor</title>
+<style>
+  :root{
+    --bg: #0A0E1A;
+    --panel: #10152A;
+    --line: #26315A;
+    --text: #EDEFFA;
+    --muted: #8590B8;
+    --signal: #2E6BFF;
+    --signal-dim: #16264F;
+    --warn: #F0A860;
+    --danger: #E4293D;
+    --web: rgba(228,41,61,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-conic-gradient(from 0deg at 50% -20%, var(--web) 0deg 1deg, transparent 1deg 15deg),
+      radial-gradient(140% 90% at 50% -20%, #1C1030 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 32px 16px 60px;
+  }
+  main{width:100%; max-width:420px;}
+  .eyebrow{
+    font-size: 13px;
+    color: var(--danger);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    font-weight: 700;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  h1{
+    font-size: 27px;
+    margin: 0 0 28px;
+    font-weight: 700;
+    line-height: 1.25;
+    background: linear-gradient(90deg, #FF3B4E 0%, #EDEFFA 45%, #4C7CFF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before{
+    content:"🕸️";
+    position:absolute;
+    top:-14px; right:-10px;
+    font-size: 64px;
+    opacity: 0.07;
+    transform: rotate(8deg);
+  }
+  .status-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .dot{
+    width:11px; height:11px; border-radius:50%;
+    background: var(--danger);
+    box-shadow: 0 0 0 0 rgba(226,100,90,0.5);
+  }
+  .dot.on{
+    background: var(--signal);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(46,107,255,0.45); }
+    70%{ box-shadow: 0 0 0 9px rgba(46,107,255,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(46,107,255,0); }
+  }
+  .status-text{font-size:15px; color:var(--muted);}
+  button{
+    width:100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor:pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+  button:active{ transform: scale(0.98); }
+  button.primary{ background: linear-gradient(90deg, var(--danger), var(--signal)); color: #FFFFFF; }
+  button.primary:disabled{ background: var(--signal-dim); color: #6B7BAD; cursor:default; }
+  .telemetry{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .tile{
+    background: #0D1B25;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .tile .label{ font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .tile .value{
+    font-family: 'Consolas', 'SF Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .note{
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 18px;
+  }
+  .note b{ color: var(--text); }
+  .log{
+    font-family: 'Consolas', 'SF Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    max-height: 100px;
+    overflow-y:auto;
+    margin-top:14px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">🕷️ Rastreador Aranha</div>
+  <h1>Transmissor — carrega o micro:bit junto com você</h1>
+
+  <div class="card">
+    <div class="status-row">
+      <div class="dot" id="dot"></div>
+      <div class="status-text" id="statusText">Desconectado do micro:bit</div>
+    </div>
+    <button class="primary" id="btnConectar">Conectar ao micro:bit</button>
+
+    <div class="telemetry">
+      <div class="tile">
+        <div class="label">Passos</div>
+        <div class="value" id="valPassos">—</div>
+      </div>
+      <div class="tile">
+        <div class="label">GPS</div>
+        <div class="value" id="valGps">—</div>
+      </div>
+    </div>
+
+    <div class="note" id="firebaseStatus">Aguardando primeiro envio para a nuvem…</div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="note">
+    Deixe esta página aberta e a tela do celular ligada enquanto anda com o micro:bit.
+    Ela envia a localização (GPS deste celular) e os passos (do micro:bit) para o painel
+    <b>mapa.html</b> a cada poucos segundos.
+  </div>
+</main>
+
+<script>
+// ====== CONFIGURAÇÃO — cole aqui a URL do seu Realtime Database do Firebase ======
+const FIREBASE_URL = "https://rastreador-aranha-v1-default-rtdb.firebaseio.com"; // ex: "https://rastreador-ciencias-default-rtdb.firebaseio.com"
+// ==================================================================================
+
+const UART_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const UART_TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // micro:bit -> celular
+
+let passosAtuais = 0;
+let ultimaPosicao = null;
+let bleBuffer = '';
+
+const dot = document.getElementById('dot');
+const statusText = document.getElementById('statusText');
+const btnConectar = document.getElementById('btnConectar');
+const valPassos = document.getElementById('valPassos');
+const valGps = document.getElementById('valGps');
+const firebaseStatus = document.getElementById('firebaseStatus');
+const logEl = document.getElementById('log');
+
+function log(msg){
+  const t = new Date().toLocaleTimeString();
+  logEl.innerHTML = `[${t}] ${msg}<br>` + logEl.innerHTML;
+}
+
+function setConectado(conectado){
+  dot.classList.toggle('on', conectado);
+  statusText.textContent = conectado ? 'Conectado ao micro:bit' : 'Desconectado do micro:bit';
+  btnConectar.textContent = conectado ? 'Conectado' : 'Conectar ao micro:bit';
+  btnConectar.disabled = conectado;
+}
+
+async function conectar(){
+  if (!navigator.bluetooth){
+    alert('Este navegador não suporta Bluetooth. Use Chrome no Android ou no computador.');
+    return;
+  }
+  try{
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'BBC micro:bit' }],
+      optionalServices: [UART_SERVICE]
+    });
+    log('Dispositivo escolhido: ' + device.name);
+    device.addEventListener('gattserverdisconnected', () => setConectado(false));
+
+    await conectarComTentativas(device, 3);
+  }catch(err){
+    log('Erro ao conectar: ' + err.message);
+  }
+}
+
+async function conectarComTentativas(device, tentativasRestantes){
+  try{
+    const server = await device.gatt.connect();
+    // pequena pausa: dá tempo do Android terminar a negociação da conexão
+    await new Promise(resolve => setTimeout(resolve, 600));
+    const service = await server.getPrimaryService(UART_SERVICE);
+    const txChar = await service.getCharacteristic(UART_TX);
+    await txChar.startNotifications();
+    txChar.addEventListener('characteristicvaluechanged', onDadosRecebidos);
+
+    setConectado(true);
+    log('Conectado! Recebendo dados do micro:bit…');
+    iniciarGps();
+  }catch(err){
+    if (tentativasRestantes > 0){
+      log('Tentativa falhou (' + err.message + '), tentando de novo…');
+      try{ device.gatt.disconnect(); }catch(e){}
+      await new Promise(resolve => setTimeout(resolve, 800));
+      await conectarComTentativas(device, tentativasRestantes - 1);
+    } else {
+      log('Erro ao conectar: ' + err.message);
+      alert('Não consegui conectar depois de várias tentativas. Veja as dicas abaixo do log.');
+    }
+  }
+}
+
+function onDadosRecebidos(event){
+  const value = new TextDecoder().decode(event.target.value);
+  bleBuffer += value;
+  let linhaFim;
+  while ((linhaFim = bleBuffer.indexOf('\n')) >= 0){
+    const linha = bleBuffer.slice(0, linhaFim).trim();
+    bleBuffer = bleBuffer.slice(linhaFim + 1);
+    processarLinha(linha);
+  }
+}
+
+function processarLinha(linha){
+  const match = linha.match(/PASSOS:(\d+)/);
+  if (match){
+    passosAtuais = parseInt(match[1], 10);
+    valPassos.textContent = passosAtuais;
+    enviarParaNuvem();
+  }
+}
+
+function iniciarGps(){
+  if (!navigator.geolocation){
+    log('Este navegador não suporta GPS.');
+    return;
+  }
+  navigator.geolocation.watchPosition(
+    (pos) => {
+      ultimaPosicao = pos.coords;
+      valGps.textContent = ultimaPosicao.latitude.toFixed(5) + ', ' + ultimaPosicao.longitude.toFixed(5);
+      enviarParaNuvem();
+    },
+    (err) => log('Erro de GPS: ' + err.message),
+    { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
+  );
+}
+
+async function enviarParaNuvem(){
+  if (!FIREBASE_URL || FIREBASE_URL.includes('SUBSTITUA_AQUI')){
+    firebaseStatus.textContent = 'Configure a URL do Firebase no arquivo rastreador.html antes de usar.';
+    return;
+  }
+  if (!ultimaPosicao) return;
+
+  const payload = {
+    lat: ultimaPosicao.latitude,
+    lon: ultimaPosicao.longitude,
+    precisao: Math.round(ultimaPosicao.accuracy),
+    passos: passosAtuais,
+    timestamp: Date.now()
+  };
+
+  try{
+    const resp = await fetch(FIREBASE_URL + '/rastreador.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (resp.ok){
+      firebaseStatus.textContent = 'Enviado para o painel às ' + new Date().toLocaleTimeString();
+    } else {
+      firebaseStatus.textContent = 'Falha ao enviar (verifique a URL do Firebase e as regras do banco).';
+    }
+  }catch(err){
+    firebaseStatus.textContent = 'Sem internet ou URL do Firebase incorreta.';
+  }
+}
+
+btnConectar.addEventListener('click', conectar);
+</script>
+</body>
+</html>

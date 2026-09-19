@@ -217,7 +217,17 @@ async function conectar(){
     log('Dispositivo escolhido: ' + device.name);
     device.addEventListener('gattserverdisconnected', () => setConectado(false));
 
+    await conectarComTentativas(device, 3);
+  }catch(err){
+    log('Erro ao conectar: ' + err.message);
+  }
+}
+
+async function conectarComTentativas(device, tentativasRestantes){
+  try{
     const server = await device.gatt.connect();
+    // pequena pausa: dá tempo do Android terminar a negociação da conexão
+    await new Promise(resolve => setTimeout(resolve, 600));
     const service = await server.getPrimaryService(UART_SERVICE);
     const txChar = await service.getCharacteristic(UART_TX);
     await txChar.startNotifications();
@@ -227,7 +237,15 @@ async function conectar(){
     log('Conectado! Recebendo dados do micro:bit…');
     iniciarGps();
   }catch(err){
-    log('Erro ao conectar: ' + err.message);
+    if (tentativasRestantes > 0){
+      log('Tentativa falhou (' + err.message + '), tentando de novo…');
+      try{ device.gatt.disconnect(); }catch(e){}
+      await new Promise(resolve => setTimeout(resolve, 800));
+      await conectarComTentativas(device, tentativasRestantes - 1);
+    } else {
+      log('Erro ao conectar: ' + err.message);
+      alert('Não consegui conectar depois de várias tentativas. Veja as dicas abaixo do log.');
+    }
   }
 }
 

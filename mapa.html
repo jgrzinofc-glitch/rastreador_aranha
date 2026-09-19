@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel — Rastreador micro:bit</title>
+<title>Rastreador Aranha — Painel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <style>
   :root{
-    --bg: #0B1620;
-    --panel: #10202D;
-    --line: #1E3542;
-    --text: #E7F0F3;
-    --muted: #7E97A3;
-    --signal: #4ADE9A;
-    --danger: #E2645A;
+    --bg: #0A0E1A;
+    --panel: #10152A;
+    --line: #26315A;
+    --text: #EDEFFA;
+    --muted: #8590B8;
+    --signal: #2E6BFF;
+    --danger: #E4293D;
   }
   *{box-sizing:border-box;}
   html,body{height:100%; margin:0;}
@@ -33,11 +33,15 @@
     align-items:center;
     flex-wrap:wrap;
     gap: 10px;
+    background: linear-gradient(90deg, rgba(228,41,61,0.12), transparent 60%);
   }
   header h1{
     font-size: 18px;
     margin:0;
-    font-weight:600;
+    font-weight:700;
+  }
+  header h1::before{
+    content:"🕷️ ";
   }
   .badge{
     display:flex;
@@ -78,7 +82,7 @@
 </head>
 <body>
 <header>
-  <h1>Painel de rastreamento</h1>
+  <h1>Rastreador Aranha — ao vivo</h1>
   <div class="badge"><span class="dot" id="dot"></span><span id="statusText">Sem dados ainda</span></div>
 </header>
 
@@ -122,16 +126,16 @@ let jaCentralizou = false;
 const iconeAranha = L.divIcon({
   className: 'icone-aranha',
   html: `<div style="
-      width:40px; height:40px;
-      background: radial-gradient(circle at 35% 30%, #1c1c1c, #000 70%);
-      border: 2px solid #4ADE9A;
+      width:42px; height:42px;
+      background: radial-gradient(circle at 35% 30%, #241226, #000 70%);
+      border: 2px solid #E4293D;
       border-radius: 50%;
       display:flex; align-items:center; justify-content:center;
       font-size: 22px;
-      box-shadow: 0 0 12px rgba(74,222,154,0.6);
+      box-shadow: 0 0 4px 2px rgba(46,107,255,0.7), 0 0 14px rgba(228,41,61,0.7);
     ">🕷️</div>`,
-  iconSize: [40, 40],
-  iconAnchor: [20, 20]
+  iconSize: [42, 42],
+  iconAnchor: [21, 21]
 });
 
 async function atualizar(){
@@ -160,7 +164,7 @@ async function atualizar(){
     if (lat && lon){
       if (!marker){
         marker = L.marker([lat, lon], { icon: iconeAranha }).addTo(map);
-        circulo = L.circle([lat, lon], { radius: precisao || 10, color:'#4ADE9A', fillOpacity:0.1 }).addTo(map);
+        circulo = L.circle([lat, lon], { radius: precisao || 10, color:'#2E6BFF', fillOpacity:0.12 }).addTo(map);
       } else {
         marker.setLatLng([lat, lon]);
         circulo.setLatLng([lat, lon]);

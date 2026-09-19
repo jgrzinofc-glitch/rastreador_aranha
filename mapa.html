@@ -119,6 +119,21 @@ let marker = null;
 let circulo = null;
 let jaCentralizou = false;
 
+const iconeAranha = L.divIcon({
+  className: 'icone-aranha',
+  html: `<div style="
+      width:40px; height:40px;
+      background: radial-gradient(circle at 35% 30%, #1c1c1c, #000 70%);
+      border: 2px solid #4ADE9A;
+      border-radius: 50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 22px;
+      box-shadow: 0 0 12px rgba(74,222,154,0.6);
+    ">🕷️</div>`,
+  iconSize: [40, 40],
+  iconAnchor: [20, 20]
+});
+
 async function atualizar(){
   if (!FIREBASE_URL || FIREBASE_URL.includes('SUBSTITUA_AQUI')){
     statusText.textContent = 'Configure a URL do Firebase no arquivo mapa.html';
@@ -144,7 +159,7 @@ async function atualizar(){
 
     if (lat && lon){
       if (!marker){
-        marker = L.marker([lat, lon]).addTo(map);
+        marker = L.marker([lat, lon], { icon: iconeAranha }).addTo(map);
         circulo = L.circle([lat, lon], { radius: precisao || 10, color:'#4ADE9A', fillOpacity:0.1 }).addTo(map);
       } else {
         marker.setLatLng([lat, lon]);

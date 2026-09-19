@@ -211,7 +211,8 @@ async function conectar(){
   }
   try{
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [UART_SERVICE] }]
+      filters: [{ namePrefix: 'BBC micro:bit' }],
+      optionalServices: [UART_SERVICE]
     });
     log('Dispositivo escolhido: ' + device.name);
     device.addEventListener('gattserverdisconnected', () => setConectado(false));

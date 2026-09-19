@@ -225,12 +225,26 @@ async function conectar(){
 
 async function conectarComTentativas(device, tentativasRestantes){
   try{
+    log('Etapa 1: conectando ao GATT server…');
     const server = await device.gatt.connect();
-    // pequena pausa: dá tempo do Android terminar a negociação da conexão
+    log('Etapa 1 OK.');
+
     await new Promise(resolve => setTimeout(resolve, 600));
+
+    log('Etapa 2: buscando o serviço UART…');
     const service = await server.getPrimaryService(UART_SERVICE);
+    log('Etapa 2 OK.');
+
+    log('Etapa 3: buscando a característica de leitura…');
     const txChar = await service.getCharacteristic(UART_TX);
+    log('Etapa 3 OK. Propriedades: ' + JSON.stringify(txChar.properties));
+
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    log('Etapa 4: ativando notificações…');
     await txChar.startNotifications();
+    log('Etapa 4 OK.');
+
     txChar.addEventListener('characteristicvaluechanged', onDadosRecebidos);
 
     setConectado(true);
@@ -238,13 +252,13 @@ async function conectarComTentativas(device, tentativasRestantes){
     iniciarGps();
   }catch(err){
     if (tentativasRestantes > 0){
-      log('Tentativa falhou (' + err.message + '), tentando de novo…');
+      log('Falhou nessa etapa (' + err.message + '), tentando de novo…');
       try{ device.gatt.disconnect(); }catch(e){}
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       await conectarComTentativas(device, tentativasRestantes - 1);
     } else {
-      log('Erro ao conectar: ' + err.message);
-      alert('Não consegui conectar depois de várias tentativas. Veja as dicas abaixo do log.');
+      log('Erro final: ' + err.message);
+      alert('Não consegui conectar depois de várias tentativas. Veja o log detalhado na tela.');
     }
   }
 }
